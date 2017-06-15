@@ -89,9 +89,6 @@ double GaussSystem::thirdvirial() {
                     if (i < u || j < v) {
                         det = triomatfast(i, j, u, v, lti);
                         sum += std::pow(det, -D/2.0);
-                        if(!std::isfinite(sum)) {
-                            std::cerr << "Overflowed " << sum << std::endl;
-                        }
                     }
                 }
             }
