@@ -32,7 +32,8 @@ public:
     double z0();
     double z0R();
     double alpham1();
-    double thirdvirial();
+    double thirdcorrection();
+    double secondcorrection();
  
     double omatfast(int i, int j, arma::mat &m);  //finds c^T lti c in 1D quickly
     double triomatfast(const int i, const int j, const int u, const int v, arma::mat &m); //finds det(c^T lti c) quickly for 2 delta functions in 1D
@@ -75,12 +76,22 @@ GaussSystem::GaussSystem(arma::mat laplacian, double dimension, double seglen) {
     mat2d = arma::zeros(2, 2);  //2x2 matrix for use in triomatfast
 }
  
+double GaussSystem::secondcorrection() {
+	double acc = 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = i+1; j < N; j++) {
+            acc += std::pow(omatfast(i, j, lti), -D/2.0);
+        }
+    }
+    return acc * std::pow(D/(2*M_PI*a*a), D/2.0);
+}
+
 //Calculate third virial coefficient
 //calculates pairs f_{i,j}f_{u,v} where i < j, v > j, u >= i
 //a heavy goddamn calculation
-double GaussSystem::thirdvirial() {
+double GaussSystem::thirdcorrection() {
     double sum = 0;
-    double factor = std::pow((D*D / (a*a)) / (2 * M_PI), D);
+    double factor = std::pow(D / (2*M_PI*a*a), D);
     double det;
     for (int i = 0; i < N - 1; i++) {
         for (int j = i + 1; j < N; j++) {
@@ -94,7 +105,7 @@ double GaussSystem::thirdvirial() {
             }
         }
     }
-    return factor*sum*4;
+    return factor*sum;
 }
  
 //Calculates \alpha - 1
@@ -169,7 +180,8 @@ int main(int argc, char** argv)
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();
-        std::cout << chain.rg20 << " " << res << " " << chain.thirdvirial() << std::endl;
+        std::cout << chain.rg20 << " " << res << " " << 0 << std::endl; //chain.thirdcorrection() << std::endl;
+        //std::cerr << "Third Virial " << std::pow(chain.secondcorrection(), 2) - 2.0*chain.thirdcorrection() << std::endl;
         return 0; //Only run once
     }
     return 0;
