@@ -63,7 +63,7 @@ def dendrimer_expansion():
 		eps = 0.0001
 		a=1.0
 		coefs = calcCoeffs(adjstring, N, D, eps, a)
-		print("{0} {1} {2}".format(N*N/np.power(coefs[0],3.0/2.0),coefs[1], coefs[2]))
+		print("{0} {1} {2}".format(N*N*np.power(coefs[0],-D/2.0),coefs[1], N))
 
 def small_example():
 	gas = False

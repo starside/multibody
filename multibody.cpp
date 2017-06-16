@@ -176,7 +176,7 @@ int main(int argc, char** argv)
         }
         arma::mat adjacency = readMatrix(line, &dim, &eps, &a);
         int N = adjacency.n_cols;
-        arma::mat delta = eps*arma::eye(N, N); //delta(0, 0) = eps;
+        arma::mat delta = eps*arma::zeros(N, N); delta(0, 0) = 1.0;
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();
