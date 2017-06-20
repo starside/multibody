@@ -176,8 +176,11 @@ int main(int argc, char** argv)
         }
         arma::mat adjacency = readMatrix(line, &dim, &eps, &a);
         int N = adjacency.n_cols;
-        arma::mat delta = eps*arma::zeros(N, N); delta(0, 0) = 1.0; //This only anchors one monomer
-        //arma::mat delta = eps*arma::eye(N, N); //This anchors all monomers
+        arma::mat delta = eps*arma::eye(N, N); //This anchors all monomers
+        if(eps == 0.0){	//Anchor only 1 monomer.  This has the effect of no confining potential
+        	delta = 0*delta;
+        	delta(0, 0) = 1.0; //This only anchors one monomer
+        }
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();

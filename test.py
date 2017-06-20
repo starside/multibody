@@ -65,8 +65,9 @@ def linear_expansion():
     for N in range(500, 2000, 200):
         adj = buildLinear(N)
         adjstring = adjToString(adj)
+        confinement_energy = 5.0 #Totan energy of confinement
         D = 3
-        eps = 0.0001
+        eps = confinement_energy / N
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
         #2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)
