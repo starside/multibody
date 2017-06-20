@@ -163,7 +163,7 @@ arma::mat readMatrix(std::string line, double *dim, double *eps, double *a) {
  
 int main(int argc, char** argv)
 {
-    double eps = 0.001;
+    double eps = 1.0;
     double dim = 3.0;
     double a = 1.0;
     std::regex re("^\\w*\\n*$"); //find an empty line with a new line at end
@@ -176,7 +176,8 @@ int main(int argc, char** argv)
         }
         arma::mat adjacency = readMatrix(line, &dim, &eps, &a);
         int N = adjacency.n_cols;
-        arma::mat delta = eps*arma::zeros(N, N); delta(0, 0) = 1.0;
+        //arma::mat delta = eps*arma::zeros(N, N); delta(0, 0) = 1.0; //This only anchors one monomer
+        arma::mat delta = eps*arma::eye(N, N); //This anchors all monomers
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();
