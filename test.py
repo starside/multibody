@@ -3,7 +3,7 @@ import os
 import re
 from graph_tool.all import *
 import numpy as np
-
+from scipy.linalg import toeplitz
 
 def buildDendrimer(gen, func):
     g = Graph(directed=False)
@@ -26,6 +26,11 @@ def buildDendrimer(gen, func):
         vlist = terminals
         i = i + 1
     return g
+
+def buildLinear(N):
+	x = np.zeros((N,1))
+	x[1] = 1
+	return toeplitz(x)
 
 
 def calcCoeffs(adj, size, dim, eps, a):
@@ -55,6 +60,17 @@ def adjToString(matrix):
     string += "\n"
     return string
 
+
+def linear_expansion():
+    for N in range(500, 2000, 200):
+        adj = buildLinear(N)
+        adjstring = adjToString(adj)
+        D = 3
+        eps = 0.0001
+        a = 1.0
+        coefs = calcCoeffs(adjstring, N, D, eps, a)
+        print("{0} {1} {2}".format(
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
 
 def dendrimer_expansion():
     genmax = 10
@@ -93,7 +109,8 @@ def small_example():
 
 
 options = {"dendrimer expansion": dendrimer_expansion,
-           "small example": small_example
+           "small example": small_example,
+           "linear expansion": linear_expansion
            }
 
-options["dendrimer expansion"]()
+options["linear expansion"]()
