@@ -65,7 +65,7 @@ def dendrimer_expansion():
         adjstring = adjToString(adj)
         N = len(adj)
         D = 3
-        eps = 0.0001
+        eps = 10
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
         print("{0} {1} {2}".format(
