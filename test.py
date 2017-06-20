@@ -69,6 +69,8 @@ def linear_expansion():
         eps = 0.0001
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
+        #2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)
+        z = 2*np.power(2.0*np.pi*a*a / D, -D / 2.0)*np.power(N, 0.5)
         print("{0} {1} {2}".format(
             N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
 
