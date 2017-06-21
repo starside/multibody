@@ -27,6 +27,24 @@ def buildDendrimer(gen, func):
         i = i + 1
     return g
 
+def buildTorus(width):
+    g = Graph(directed=False)
+    for i in range(width*width):    # Add vertices
+        g.add_vertex()
+    #Build grid mesh
+    for row in range(width):
+        for col in range(width):
+            m = row*width + col
+            if col != width - 1:
+                g.add_edge(m, m+1)
+            if row != width - 1:
+                g.add_edge(m, m + width)
+    #Connect edges in period boundary condition
+    for row in range(width):
+        g.add_edge(row*width, row*width + width - 1)
+    for col in range(width):
+        g.add_edge(col, width*width - width + col)
+    return g
 
 
 def buildLinear(N):
@@ -92,6 +110,21 @@ def dendrimer_expansion():
         print("{0} {1} {2}".format(
             N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
 
+def torus_expansion():
+    sizemin = 4
+    sizemax = 50
+    for w in range(sizemin, sizemax, 2):
+        dg = buildTorus(w)
+        adj = adjacency(dg).todense()
+        adjstring = adjToString(adj)
+        N = len(adj)
+        D = 3
+        eps = 0
+        a = 1.0
+        coefs = calcCoeffs(adjstring, N, D, eps, a)
+        print("{0} {1} {2}".format(
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
+
 
 def small_example():
     gas = False
@@ -115,7 +148,8 @@ def small_example():
 
 options = {"dendrimer expansion": dendrimer_expansion,
            "small example": small_example,
-           "linear expansion": linear_expansion
+           "linear expansion": linear_expansion,
+           "torus expansion":torus_expansion
            }
 
-options["linear expansion"]()
+options["torus expansion"]()
