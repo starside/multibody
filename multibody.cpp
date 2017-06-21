@@ -32,11 +32,13 @@ public:
     double z0();
     double z0R();
     double alpham1();
+    double alpham2(double alpha1);
     double thirdcorrection();
     double secondcorrection();
  
     double omatfast(int i, int j, arma::mat &m);  //finds c^T lti c in 1D quickly
     double triomatfast(const int i, const int j, const int u, const int v, arma::mat &m); //finds det(c^T lti c) quickly for 2 delta functions in 1D
+    arma::mat triomat(const int i, const int j, const int u, const int v, arma::mat &m);
 private:
     arma::mat mat2d;
 };
@@ -61,6 +63,24 @@ double GaussSystem::triomatfast(const int i, const int j, const int u, const int
     std::cout << cm.t()*m*cm;
     std::cout << mat2d << std::endl; */
     return arma::det(mat2d);
+}
+
+arma::mat GaussSystem::triomat(const int i, const int j, const int u, const int v, arma::mat &m) {
+    //matrix assosciated with \delta(r_i - r_j) \delta(r_u - r_v)
+    //matrix is a reference to a pre-allocated matrix.  This function will be called a butt-ton of times
+    //so it should be fast if possible
+    arma::mat rv(2,2);
+    rv(0, 0) = m(i, i) + m(j, j) - m(i, j) - m(j, i); rv(0, 1) = m(i, u) + m(j, v) - m(i, v) - m(j, u);
+    rv(1, 0) = m(u, i) + m(v, j) - m(v, i) - m(u, j); rv(1, 1) = m(u, u) + m(v, v) - m(u, v) - m(v, u);
+   
+    /*
+    manual verification
+    arma::mat cm = arma::zeros(10, 2);
+    cm(i, 0) = 1; cm(j, 0) = -1;
+    cm(u, 1) = 1; cm(v, 1) = -1;
+    std::cout << cm.t()*m*cm;
+    std::cout << mat2d << std::endl; */
+    return rv;
 }
  
  
@@ -117,6 +137,32 @@ double GaussSystem::alpham1() {
         }
     }
     return (2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)/rg20) * acc;
+}
+
+//next order in \alpha
+//requires previous order correction as parameter
+double GaussSystem::alpham2(double alpha1) {
+	double term1 = 4*alpha1*secondcorrection();
+	double term2 = 0;
+    arma::mat ok(2,2);	//matrices needed for 3rd order calculation
+    arma::mat oki(2,2);
+    arma::mat okp(2,2);
+    //Horrid calculation
+    for (int i = 0; i < N - 1; i++) {
+        for (int j = i + 1; j < N; j++) {
+            for (int u = i; u < N - 1; u++) {
+                for (int v = u + 1; v < N; v++) {
+                    if (i < u || j < v) {
+                        ok = triomat(i, j, u, v, lti); //c^T L^{-1} c
+                        oki = arma::inv(ok);	//invert it
+                        okp = triomat(i, j, u, v, opm); //c^T L^{-1} R_G^2 L^{-1}
+                        term2 += std::pow(arma::det(ok), -D/2.0)*arma::trace(oki*okp);
+                    }
+                }
+            }
+        }
+    }
+    return term1 - 0*4*term2/rg20*2.0*M_PI*a*a / D;
 }
  
 /*
@@ -184,7 +230,7 @@ int main(int argc, char** argv)
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();
-        std::cout << chain.rg20 << " " << res << " " << 0 << std::endl; //chain.thirdcorrection() << std::endl;
+        std::cout << chain.rg20 << " " << res << " " << chain.alpham2(res) << " " << std::endl; //chain.thirdcorrection() << std::endl;
         //std::cerr << "Third Virial " << std::pow(chain.secondcorrection(), 2) - 2.0*chain.thirdcorrection() << std::endl;
         return 0; //Only run once
     }

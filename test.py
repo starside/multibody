@@ -61,9 +61,9 @@ def calcCoeffs(adj, size, dim, eps, a):
     res = p.communicate(input=inpt)
     # Parse with regular expression
     pattern = """^	#Beginning
-				(\d*\.*\d*(?:e\+){0,1}\d*)\s+	#First number
-				(\d*\.*\d*(?:e\+){0,1}\d*)\s+	#Second numbert
-				(\d*\.*\d*(?:e\+){0,1}\d*)		#Third number"""
+				(-*\d*\.*\d*(?:e\+){0,1}\d*)\s+	#First number
+				(-*\d*\.*\d*(?:e\+){0,1}\d*)\s+	#Second numbert
+				(-*\d*\.*\d*(?:e\+){0,1}\d*)\s*		#Third number"""
     expr = re.compile(pattern, re.VERBOSE)
     data = expr.match(res[0])
     assert(data is not None)
@@ -82,18 +82,18 @@ def adjToString(matrix):
 
 
 def linear_expansion():
-    for N in range(500, 2000, 200):
+    for N in range(20, 2000, 30):
         adj = buildLinear(N)
         adjstring = adjToString(adj)
         confinement_energy = 5.0 #Totan energy of confinement
         D = 3
-        eps = confinement_energy / N
+        eps = 0
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
         #2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)
         z = 2*np.power(2.0*np.pi*a*a / D, -D / 2.0)*np.power(N, 0.5)
-        print("{0} {1} {2}".format(
-            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
+        print("{0} {1} {3} {2}".format(
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1]/z, N, coefs[2]/(z*z) ))
 
 def dendrimer_expansion():
     genmax = 10
@@ -152,4 +152,4 @@ options = {"dendrimer expansion": dendrimer_expansion,
            "torus expansion":torus_expansion
            }
 
-options["torus expansion"]()
+options["linear expansion"]()
