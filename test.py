@@ -27,6 +27,8 @@ def buildDendrimer(gen, func):
         i = i + 1
     return g
 
+
+
 def buildLinear(N):
 	x = np.zeros((N,1))
 	x[1] = 1
