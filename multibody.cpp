@@ -162,7 +162,8 @@ double GaussSystem::alpham2(double alpha1) {
             }
         }
     }
-    return term1 - 0*4*term2/rg20*2.0*M_PI*a*a / D;
+    return term1 - 0*4*term2/rg20*2.0*M_PI*a*a / D; 
+    
 }
  
 /*
