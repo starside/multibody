@@ -4,6 +4,7 @@ import re
 from graph_tool.all import *
 import numpy as np
 from scipy.linalg import toeplitz
+import random
 
 def buildDendrimer(gen, func):
     g = Graph(directed=False)
@@ -125,6 +126,70 @@ def torus_expansion():
         print("{0} {1} {2}".format(
             N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
 
+def removeRandomEdge(g):
+    """
+    removes a random edge from graph g.  Not efficient in implementation.  If a disconnected
+    fragment is created, we delete the smallest fragment
+    """
+    class Frag(BFSVisitor):
+        def __init__(self):
+            self.vertices = []
+
+        def discover_vertex(self, u):
+            self.vertices.append(u)
+
+    def countFragment(g, node):
+        """ Counts the size of a fragment"""
+        fragment = Frag()
+        bfs_search(g, node, fragment)
+        return fragment.vertices
+
+
+    numedges = g.num_edges()
+    inf = g.num_vertices()*2
+
+    randomedge = random.randint(0, numedges - 1)
+    for i,e in enumerate(g.edges()): #Not efficient way to do this
+        if i == randomedge:
+            [s, t] = e.source(), e.target()
+            g.remove_edge(e)
+            fragment1 = countFragment(g, s)
+            fragment2 = countFragment(g, t)
+            # delete smallest fragment
+            if len(fragment1) != len(fragment2):
+                todie = fragment2
+                if len(fragment1) < len(fragment2):
+                    todie =fragment1
+                # Delete the vertices in the smallest fragment
+                #print len(fragment1), len(fragment2), len(todie)
+                #graph_draw(g, vertex_font_size=10, output_size=(800, 800))
+                for die in reversed(sorted(todie)):
+                    g.remove_vertex(die)
+            break
+
+
+def torus_percolation():
+    N = 10
+    percs = N*N
+
+    dg = buildTorus(N)
+    adj = adjacency(dg).todense()
+    adjstring = adjToString(adj)
+
+    for p in range(percs):
+        N = len(adj)
+        D = 3
+        eps = 0.0
+        a = 1.0
+        coefs = calcCoeffs(adjstring, N, D, eps, a)
+        print("{0} {1} {2}".format(
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
+        #Delete a random edge
+        removeRandomEdge(dg)
+        # rebuild adjaceny matrix
+        adj = adjacency(dg).todense()
+        adjstring = adjToString(adj)
+
 
 def small_example():
     gas = False
@@ -149,7 +214,8 @@ def small_example():
 options = {"dendrimer expansion": dendrimer_expansion,
            "small example": small_example,
            "linear expansion": linear_expansion,
-           "torus expansion":torus_expansion
+           "torus expansion":torus_expansion,
+           "torus percolation":torus_percolation
            }
 
-options["linear expansion"]()
+options["torus percolation"]()

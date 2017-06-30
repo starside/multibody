@@ -162,7 +162,7 @@ double GaussSystem::alpham2(double alpha1) {
             }
         }
     }
-    return term1 - 0*4*term2/rg20*2.0*M_PI*a*a / D; 
+    return term1 - 4*term2/rg20*2.0*M_PI*a*a / D ; 
     
 }
  
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
         arma::mat lap = calcLaplacian(adjacency) + delta;
         GaussSystem chain = GaussSystem(lap, dim, a);
         double res = chain.alpham1();
-        std::cout << chain.rg20 << " " << res << " " << chain.alpham2(res) << " " << std::endl; //chain.thirdcorrection() << std::endl;
+        std::cout << chain.rg20 << " " << res << " " << 0 << " " << std::endl; //chain.thirdcorrection() << std::endl;
         //std::cerr << "Third Virial " << std::pow(chain.secondcorrection(), 2) - 2.0*chain.thirdcorrection() << std::endl;
         return 0; //Only run once
     }
