@@ -193,12 +193,10 @@ def torus_percolation():
         D = 3
         eps = 0.0
         a = 1.0
-        try:
-            coefs = calcCoeffs(adjstring, N, D, eps, a)
-        except AssertionError:
-            print adjstring
-        print("{0} {1} {2} {3}".format(
-            coefs[0], coefs[1], N, count_edges(dg) ))
+        coefs = calcCoeffs(adjstring, N, D, eps, a)
+        #print("{0} {1} {2} {3}".format(
+        #    coefs[0], coefs[1], N, count_edges(dg) ))
+        print N, adjstring
         #Delete a random edge
         removeRandomEdge(dg)
         # rebuild adjaceny matrix
