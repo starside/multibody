@@ -67,7 +67,10 @@ def calcCoeffs(adj, size, dim, eps, a):
 				(-*\d*\.*\d*(?:e\+){0,1}\d*)\s*		#Third number"""
     expr = re.compile(pattern, re.VERBOSE)
     data = expr.match(res[0])
-    assert(data is not None)
+    try:
+        assert(data is not None)
+    except:
+        raise AssertionError
     # Convert extracted data to floating point
     [rg2, expansion, thirdorder] = [float(i) for i in data.groups()]
     return [rg2, expansion, thirdorder]
@@ -126,6 +129,13 @@ def torus_expansion():
         print("{0} {1} {2}".format(
             N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
 
+def count_edges(g):
+    #num_edges is wrong
+    count = 0
+    for e in g.edges():
+        count = count + 1
+    return count
+
 def removeRandomEdge(g):
     """
     removes a random edge from graph g.  Not efficient in implementation.  If a disconnected
@@ -134,56 +144,61 @@ def removeRandomEdge(g):
     class Frag(BFSVisitor):
         def __init__(self):
             self.vertices = []
+            self.edges = []
 
         def discover_vertex(self, u):
             self.vertices.append(u)
+
+        def examine_edge(self, e):
+            self.edges.append(e)
 
     def countFragment(g, node):
         """ Counts the size of a fragment"""
         fragment = Frag()
         bfs_search(g, node, fragment)
-        return fragment.vertices
-
+        fragment.size = len(fragment.vertices)
+        return fragment
 
     numedges = g.num_edges()
     inf = g.num_vertices()*2
 
-    randomedge = random.randint(0, numedges - 1)
+    randomedge = random.randint(0, count_edges(g) - 1)
     for i,e in enumerate(g.edges()): #Not efficient way to do this
         if i == randomedge:
             [s, t] = e.source(), e.target()
             g.remove_edge(e)
             fragment1 = countFragment(g, s)
-            fragment2 = countFragment(g, t)
+            fragment2 = countFragment(g, t) 
             # delete smallest fragment
-            if len(fragment1) != len(fragment2):
+            if fragment1.size != g.num_vertices():
                 todie = fragment2
-                if len(fragment1) < len(fragment2):
+                if fragment1.size < fragment2.size:
                     todie =fragment1
                 # Delete the vertices in the smallest fragment
-                #print len(fragment1), len(fragment2), len(todie)
+                #print len(fragment1.edges), len(fragment2.edges), len(todie.edges)
                 #graph_draw(g, vertex_font_size=10, output_size=(800, 800))
-                for die in reversed(sorted(todie)):
-                    g.remove_vertex(die)
+                g.remove_vertex(todie.vertices)
             break
 
-
 def torus_percolation():
-    N = 10
-    percs = N*N
+    gridsize = 10
 
-    dg = buildTorus(N)
+    dg = buildTorus(gridsize)
     adj = adjacency(dg).todense()
     adjstring = adjToString(adj)
+    N = len(adj)
 
-    for p in range(percs):
+    while N > 4:
         N = len(adj)
         D = 3
         eps = 0.0
         a = 1.0
-        coefs = calcCoeffs(adjstring, N, D, eps, a)
-        print("{0} {1} {2}".format(
-            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
+        try:
+            coefs = calcCoeffs(adjstring, N, D, eps, a)
+        except AssertionError:
+            print adjstring
+        print("{0} {1} {2} {3}".format(
+            coefs[0], coefs[1], N, count_edges(dg) ))
         #Delete a random edge
         removeRandomEdge(dg)
         # rebuild adjaceny matrix
