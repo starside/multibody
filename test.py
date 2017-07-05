@@ -187,7 +187,7 @@ def torus_percolation():
     adj = adjacency(dg).todense()
     adjstring = adjToString(adj)
     N = len(adj)
-
+    graph_draw(dg, vertex_font_size=10, output_size=(800, 800))
     while N > 4:
         N = len(adj)
         D = 3
