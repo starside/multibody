@@ -10,13 +10,18 @@ public:
     double _z0 = -1.0;
  
     GaussSystem(arma::mat laplacian, double dimension, double seglen);
+    double term1(); //
+    double term2();
+    double correction1();
+
     double z0();
     double z0R();
     double alpham1();
     double alpham2(double alpha1);
     double thirdcorrection();
     double secondcorrection();
- 
+    double order1fractionalRg2O(const int i, const int j);
+    double order2fractionalRg2O(const int i, const int j, const int p, const int q);
     double omatfast(int i, int j, arma::mat &m);  //finds c^T lti c in 1D quickly
     double triomatfast(const int i, const int j, const int u, const int v, arma::mat &m); //finds det(c^T lti c) quickly for 2 delta functions in 1D
     arma::mat triomat(const int i, const int j, const int u, const int v, arma::mat &m);
@@ -24,6 +29,7 @@ private:
     arma::mat mat2d;
 };
 
+// Calculates Laplacian from adjacency matrix
 arma::mat calcLaplacian(const arma::mat &adj);
 // Calculates the radius of gyration matrix operator
 arma::mat rg2mat(int N);

@@ -109,6 +109,18 @@ GaussSystem::GaussSystem(arma::mat laplacian, double dimension, double seglen) {
     rg20 = arma::trace(lti*rg2);
     mat2d = arma::zeros(2, 2);  //2x2 matrix for use in triomatfast
 }
+
+double GaussSystem::order1fractionalRg2O(const int i, const int j) {
+	double o = omatfast(i, j, lti);
+	double on = omatfast(i, j, opm);
+	return 1 - on/o/rg20;
+}
+
+double GaussSystem::order2fractionalRg2O(const int i, const int j, const int p, const int q) {
+	arma::mat o = triomat(i, j, p, q, lti);
+	arma::mat on = triomat(i, j, p, q, opm);
+	return 1 - arma::trace(arma::inv(o)*on)/rg20;
+}
  
 double GaussSystem::secondcorrection() {
 	double acc = 0;
@@ -120,9 +132,11 @@ double GaussSystem::secondcorrection() {
     return acc * std::pow(D/(2*M_PI*a*a), D/2.0);
 }
 
-//Calculate third virial coefficient
-//calculates pairs f_{i,j}f_{u,v} where i < j, v > j, u >= i
-//a heavy goddamn calculation
+/*
+ Calculate third virial coefficient
+ calculates pairs f_{i,j}f_{u,v} where i < j, v > j, u >= i
+ a heavy goddamn calculation
+*/
 double GaussSystem::thirdcorrection() {
     double sum = 0;
     double factor = std::pow(D / (2*M_PI*a*a), D);
@@ -141,7 +155,45 @@ double GaussSystem::thirdcorrection() {
     }
     return factor*sum;
 }
+
+//Calculates \alpha - 1
+double GaussSystem::correction1() {
+    double acc = 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = i+1; j < N; j++) {
+            acc += std::pow(omatfast(i, j, lti), -D/2.0);
+        }
+    }
+    return acc;
+}
  
+//Calculates \alpha - 1
+double GaussSystem::term1() {
+    double acc = 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = i+1; j < N; j++) {
+            acc += std::pow(omatfast(i, j, lti), -D/2.0)*(1 - order1fractionalRg2O(i,j));
+        }
+    }
+    return acc;
+}
+
+double GaussSystem::term2() {
+    double acc = 0;
+    for (int i = 0; i < N - 1; i++) {
+        for (int j = i + 1; j < N; j++) {
+            for (int u = i; u < N - 1; u++) {
+                for (int v = u + 1; v < N; v++) {
+                    if (i < u || j < v) {
+                        acc += std::pow(triomatfast(i, j, u, v, lti), -D/2.0)*(order2fractionalRg2O(i,j,u,v) - 1);
+                    }
+                }
+            }
+        }
+    }
+    return correction1()*term1() + acc;
+}
+
 //Calculates \alpha - 1
 double GaussSystem::alpham1() {
     double acc = 0;
