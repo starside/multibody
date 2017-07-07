@@ -139,7 +139,8 @@ def count_edges(g):
 def removeRandomEdge(g):
     """
     removes a random edge from graph g.  Not efficient in implementation.  If a disconnected
-    fragment is created, we delete the smallest fragment
+    fragment is created, we delete the smallest fragment.  If no fragment was produced, return
+    None
     """
     class Frag(BFSVisitor):
         def __init__(self):
@@ -157,10 +158,10 @@ def removeRandomEdge(g):
             newg = Graph(directed=False)
             #Add Edges
             if len(self.vertexmap) == 1:
-                newg.add_vertex(0)
+                newg.add_vertex()
             else:
                 for e in g.edges():
-                    # Add edges only in the fragment
+                    # Add edges only in the fragment.  Not efficient.  I should not use graph-tool
                     if e.source() in self.vertexmap and e.target() in self.vertexmap:
                         newg.add_edge(self.vertexmap[e.source()], self.vertexmap[e.target()] )
             return newg
@@ -180,7 +181,6 @@ def removeRandomEdge(g):
     randomedge = random.randint(0, count_edges(g) - 1)
     for i,e in enumerate(g.edges()): #Not efficient way to do this
         if i == randomedge:
-            print "Removing edge ", e
             [s, t] = e.source(), e.target()
             g.remove_edge(e)
             fragment1 = countFragment(g, s)
@@ -198,7 +198,6 @@ def removeRandomEdge(g):
                 for deadedge in g.edges():
                     if todie.vertexmap.has_key(deadedge.source()) or todie.vertexmap.has_key(deadedge.target()):
                         killedges.append(deadedge)
-                print killedges
                 for deadedge in killedges:
                     g.remove_edge(deadedge)
                 # Delete the vertices in the smallest fragment
@@ -213,18 +212,42 @@ def torus_percolation():
     adj = adjacency(dg).todense()
     adjstring = adjToString(adj)
     N = len(adj)
-    #graph_draw(dg, vertex_font_size=10, output_size=(800, 800))
+    fragments = []
+    print("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}".format(
+        "R_G^2", "alpha^2", "N (big fragment)", "# edges (b.f)", "avg. R_g^2 (s.f)", \
+        "avg. alpha^2 (s.f)", "avg. mass (s.f)", "# small fragments" ))
     while N > 4:
         N = len(adj)
         D = 3
         eps = 0.0
         a = 1.0
+        # Calculate the Rg2, alpha, etc for the large fragment
         coefs = calcCoeffs(adjstring, N, D, eps, a)
-        print("{0} {1} {2} {3}".format(
-            coefs[0], coefs[1], N, count_edges(dg) ))
-        #print N, adjstring
-        #Delete a random edge
-        removeRandomEdge(dg)
+        # Delete a random edge, and add the small fragment to a list
+        _ = removeRandomEdge(dg)
+        if _ is not None:
+            fragments.append(_)
+
+        # Calculate avergage R_g, \alpha and fragment mass
+        average_rg2 = 0
+        average_alpha = 0
+        average_mass = 0
+        if len(fragments) > 0:
+            for f in fragments:
+                if f.num_vertices() > 1:
+                    # Calculate coefficients of each small fragment
+                    [frag_rg2, frag_alpha, _] = calcCoeffs(adjToString(adjacency(f).todense()), f.num_vertices(), D, eps, a)
+                    average_rg2 += frag_rg2
+                    average_alpha += frag_alpha
+                average_mass += f.num_vertices()
+            average_alpha = average_alpha / (1.0* len(fragments))
+            average_rg2 = average_rg2 / (1.0* len(fragments))
+            average_mass = average_mass / (1.0* len(fragments))
+            # Calculate average fragment mass
+
+        # Print the results of each calculation
+        print("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}".format(
+            coefs[0], coefs[1], N, count_edges(dg), average_rg2, average_alpha, average_mass, len(fragments) ))
         # rebuild adjaceny matrix
         adj = adjacency(dg).todense()
         adjstring = adjToString(adj)
@@ -251,14 +274,21 @@ def small_example():
 
 def test():
     dg = buildDendrimer(2,3)
+    dg.add_edge(1,4)
+    dg.add_edge(1,5)
+    dg.add_edge(2,6)
+    dg.add_edge(2,7)
+    dg.add_edge(3,8)
+    dg.add_edge(3,9)
     for i in range(20):
         print "Num edges ", count_edges(dg)
         for e in dg.edges():
             print e
         ng = removeRandomEdge(dg)
-        print "Small chunk:"
-        for e in ng.edges():
-            print e
+        if ng is not None:
+            print "Small chunk:", ng.num_vertices()
+            for e in ng.edges():
+                print e
         print "*****************************"
 
 
@@ -270,4 +300,4 @@ options = {"dendrimer expansion": dendrimer_expansion,
            "test":test
            }
 
-options["test"]()
+options["torus percolation"]()
