@@ -206,7 +206,7 @@ def removeRandomEdge(g):
     return small_fragment
 
 def torus_percolation():
-    gridsize = 10
+    gridsize = 32
 
     dg = buildTorus(gridsize)
     adj = adjacency(dg).todense()
