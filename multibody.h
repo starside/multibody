@@ -24,6 +24,8 @@ public:
     double order2fractionalRg2O(const int i, const int j, const int p, const int q);
     double omatfast(int i, int j, arma::mat &m);  //finds c^T lti c in 1D quickly
     double triomatfast(const int i, const int j, const int u, const int v, arma::mat &m); //finds det(c^T lti c) quickly for 2 delta functions in 1D
+    /*     Calculated the summed correction of 3 mayer f functions f_ij f_jk f_ki, which os O(N^4) terms     */
+    double threeBondIrreducible(arma::mat &m); 
     arma::mat triomat(const int i, const int j, const int u, const int v, arma::mat &m);
 private:
     arma::mat mat2d;

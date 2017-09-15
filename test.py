@@ -86,7 +86,7 @@ def adjToString(matrix):
 
 
 def linear_expansion():
-    for N in range(20, 2000, 30):
+    for N in range(20, 5000, 30):
         adj = buildLinear(N)
         adjstring = adjToString(adj)
         confinement_energy = 5.0 #Totan energy of confinement
@@ -108,7 +108,7 @@ def dendrimer_expansion():
         adjstring = adjToString(adj)
         N = len(adj)
         D = 3
-        eps = 10
+        eps = 0
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
         print("{0} {1} {2}".format(
@@ -300,4 +300,4 @@ options = {"dendrimer expansion": dendrimer_expansion,
            "test":test
            }
 
-options["torus percolation"]()
+options["linear expansion"]()

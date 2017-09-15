@@ -86,17 +86,25 @@ arma::mat GaussSystem::triomat(const int i, const int j, const int u, const int 
     arma::mat rv(2,2);
     rv(0, 0) = m(i, i) + m(j, j) - m(i, j) - m(j, i); rv(0, 1) = m(i, u) + m(j, v) - m(i, v) - m(j, u);
     rv(1, 0) = m(u, i) + m(v, j) - m(v, i) - m(u, j); rv(1, 1) = m(u, u) + m(v, v) - m(u, v) - m(v, u);
-   
-    /*
-    manual verification
-    arma::mat cm = arma::zeros(10, 2);
-    cm(i, 0) = 1; cm(j, 0) = -1;
-    cm(u, 1) = 1; cm(v, 1) = -1;
-    std::cout << cm.t()*m*cm;
-    std::cout << mat2d << std::endl; */
     return rv;
 }
  
+double GaussSystem::threeBondIrreducible(arma::mat &m) {
+	arma::mat rv = arma::zeros(3,3);
+	int size = m.n_cols;	//size of matrix, it should be square
+	arma::mat c = arma::zeros(size, 3); //c matrix for 3 delta functions
+	arma::mat ct = arma::zeros(3, size); //c transpose
+	double acc = 0; int dumb;
+	for(int i = 0; i < N-1; i++){
+		for(int j = i+1; j < N; j++) {
+			for(int k = 0; k < N; k++){ if(k != i && k != j) {
+				// Stuff
+				acc += std::pow(triomatfast(i,j,j,k, m), -D/2.0);
+			}}
+		}
+	}
+	return acc;
+}
  
 GaussSystem::GaussSystem(arma::mat laplacian, double dimension, double seglen) {
     N = laplacian.n_cols;   //Matrix size.  Assume it is square
@@ -199,10 +207,10 @@ double GaussSystem::alpham1() {
     double acc = 0;
     for (int i = 0; i < N; i++) {
         for (int j = i+1; j < N; j++) {
-            acc += std::pow(omatfast(i, j, lti), -(D + 2) / 2.0) * omatfast(i, j, opm);
+            acc += omatfast(i, j, opm)*std::pow(omatfast(i, j, lti), -(1.0*D + 2.0) / 2.0) ;
         }
     }
-    return (2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)/rg20) * acc;
+    return (2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)/rg20)*acc;
 }
 
 //next order in \alpha
