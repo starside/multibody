@@ -86,7 +86,7 @@ def adjToString(matrix):
 
 
 def linear_expansion():
-    for N in range(20, 5000, 30):
+    for N in range(4, 2000, 100):
         adj = buildLinear(N)
         adjstring = adjToString(adj)
         confinement_energy = 5.0 #Totan energy of confinement
@@ -97,7 +97,7 @@ def linear_expansion():
         #2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)
         z = 2*np.power(2.0*np.pi*a*a / D, -D / 2.0)*np.power(N, 0.5)
         print("{0} {1} {3} {2}".format(
-            N * N * np.power(coefs[0], -D / 2.0), coefs[1]/z, N, coefs[2]/(z*z) ))
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N, coefs[2] ))
 
 def dendrimer_expansion():
     genmax = 10
@@ -111,8 +111,8 @@ def dendrimer_expansion():
         eps = 0
         a = 1.0
         coefs = calcCoeffs(adjstring, N, D, eps, a)
-        print("{0} {1} {2}".format(
-            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N))
+        print("{0} {1} {3} {2}".format(
+            N * N * np.power(coefs[0], -D / 2.0), coefs[1], N, coefs[2] ))
 
 def torus_expansion():
     sizemin = 4
@@ -300,4 +300,4 @@ options = {"dendrimer expansion": dendrimer_expansion,
            "test":test
            }
 
-options["linear expansion"]()
+options["dendrimer expansion"]()

@@ -213,6 +213,16 @@ double GaussSystem::alpham1() {
     return (2*std::pow(2.0*M_PI*a*a / D, -D / 2.0)/rg20)*acc;
 }
 
+double GaussSystem::isitz() {
+    double acc = 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = i+1; j < N; j++) {
+            acc += std::pow(omatfast(i, j, lti), -1.0*D/2.0) ;
+        }
+    }
+    return (2*std::pow(2.0*M_PI*a*a / D, -D / 2.0))*acc;
+}
+
 //next order in \alpha
 //requires previous order correction as parameter
 double GaussSystem::alpham2(double alpha1) {

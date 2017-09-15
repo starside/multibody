@@ -17,6 +17,7 @@ public:
     double z0();
     double z0R();
     double alpham1();
+    double isitz();
     double alpham2(double alpha1);
     double thirdcorrection();
     double secondcorrection();
