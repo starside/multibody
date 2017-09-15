@@ -86,7 +86,7 @@ def adjToString(matrix):
 
 
 def linear_expansion():
-    for N in range(4, 2000, 100):
+    for N in range(500, 2000, 200):
         adj = buildLinear(N)
         adjstring = adjToString(adj)
         confinement_energy = 5.0 #Totan energy of confinement
