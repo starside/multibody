@@ -300,4 +300,4 @@ options = {"dendrimer expansion": dendrimer_expansion,
            "test":test
            }
 
-options["dendrimer expansion"]()
+options["linear expansion"]()
